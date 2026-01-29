@@ -1,0 +1,31 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+
+# --- Agrega esto al final ---
+# Archivos de Maven (Spring Boot)
+/target
+/bin
+.mvn/
+mvnw
+mvnw.cmd
+
+# Archivos de eclipse o generales Java
+.classpath
+.project
+.settings/
+*.log
+

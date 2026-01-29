@@ -8,7 +8,7 @@ interface ProductApiService {
 
     // Aqui definimos la "llamada" para traer los productos
     // El servidor responde en la ruta "/productos"
-    @GET("productos")
+    @GET("api/productos")
     suspend fun getProductos(): Response<List<Vinyl>>
 }
 

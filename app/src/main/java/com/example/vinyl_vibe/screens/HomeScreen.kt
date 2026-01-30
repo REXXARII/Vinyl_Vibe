@@ -10,11 +10,12 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,17 +40,26 @@ import com.example.vinyl_vibe.viewmodel.ShopViewModel
 @Composable
 fun HomeScreen(navController: NavController, viewModel: ShopViewModel = viewModel()) {
 
-    // AQUI ESTA EL CAMBIO: Leemos la lista del ViewModel (Internet), no del DataSource
+    // 1. Leemos la lista del ViewModel (Internet)
     val allVinyls = viewModel.productos
-    //cambiamos it.ofertas x el actual
+    // 2. Filtramos ofertas
     val ofertas = allVinyls.filter { it.precio < 35000 }
+
+    // 3. ESTADOS PARA EL DIALOGO (Agregar/Editar)
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedVinyl by remember { mutableStateOf<Vinyl?>(null) } // Si es null = Agregar, Si tiene datos = Editar
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painter = painterResource(id = R.drawable.vinyl_record), contentDescription = null, modifier = Modifier.size(32.dp), tint = Color.Unspecified)
+                        Icon(
+                            painter = painterResource(id = R.drawable.vinyl_record),
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = Color.Unspecified
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Vinyl Vibe Online", color = NeonGreen, fontWeight = FontWeight.Bold)
                     }
@@ -62,12 +72,28 @@ fun HomeScreen(navController: NavController, viewModel: ShopViewModel = viewMode
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = DarkBackground)
             )
         },
-        containerColor = DarkBackground
+        containerColor = DarkBackground,
+        // 4. BOTON FLOTANTE (+) PARA AGREGAR
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    selectedVinyl = null // Limpiamos para que sea "Nuevo"
+                    showDialog = true    // Mostramos la ventana
+                },
+                containerColor = NeonGreen
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Agregar Disco", tint = Color.Black)
+            }
+        }
     ) { paddingValues ->
 
         // Si aun no cargan los productos, mostramos un aviso
         if (allVinyls.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues), contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(color = NeonGreen)
             }
         } else {
@@ -78,31 +104,50 @@ fun HomeScreen(navController: NavController, viewModel: ShopViewModel = viewMode
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(paddingValues)
             ) {
-                // ... (El resto de la estructura es igual, solo cambian las Cards abajo)
 
+                // --- SECCION: TITULO OFERTAS ---
                 item(span = { GridItemSpan(2) }) {
                     Text("Ofertas del Mes 🔥", color = TextWhite, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
 
+                // --- SECCION: CARRUSEL DE OFERTAS ---
                 item(span = { GridItemSpan(2) }) {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         items(ofertas) { vinyl ->
                             OfferCard(vinyl) {
-                                navController.navigate(AppScreens.Detail.route.replace("{vinylId}", vinyl.id.toString()))
+                                navController.navigate(
+                                    AppScreens.Detail.route.replace("{vinylId}", vinyl.id.toString())
+                                )
                             }
                         }
                     }
                 }
 
+                // --- SECCION: TITULO CATALOGO ---
                 item(span = { GridItemSpan(2) }) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Catálogo Completo 💿", color = TextWhite, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
 
+                // --- SECCION: GRILLA DE PRODUCTOS (Con Botones Editar/Borrar) ---
                 items(allVinyls) { vinyl ->
-                    ProductGridItem(vinyl) {
-                        navController.navigate(AppScreens.Detail.route.replace("{vinylId}", vinyl.id.toString()))
-                    }
+                    ProductGridItem(
+                        vinyl = vinyl,
+                        onClick = {
+                            navController.navigate(
+                                AppScreens.Detail.route.replace("{vinylId}", vinyl.id.toString())
+                            )
+                        },
+                        // Logica del boton Editar
+                        onEdit = {
+                            selectedVinyl = vinyl // Guardamos el disco seleccionado
+                            showDialog = true     // Abrimos el diálogo
+                        },
+                        // Logica del boton Borrar
+                        onDelete = {
+                            viewModel.eliminarProducto(vinyl.id)
+                        }
+                    )
                 }
 
                 // Boton About Us y footer...
@@ -110,34 +155,65 @@ fun HomeScreen(navController: NavController, viewModel: ShopViewModel = viewMode
                     Button(
                         onClick = { navController.navigate(AppScreens.AboutUs.route) },
                         colors = ButtonDefaults.buttonColors(containerColor = SurfaceGrey),
-                        modifier = Modifier.fillMaxWidth().padding(top = 20.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, bottom = 80.dp) // Un poco de margen abajo
                     ) {
-                        Text("¿Quiénes Somos?", color = TextWhite)
+                        Text("¿Quienes Somos?", color = TextWhite)
                     }
                 }
             }
         }
+
+        // 5. VENTANA EMERGENTE (DIALOG)
+        if (showDialog) {
+            ProductDialog(
+                vinyl = selectedVinyl,
+                onDismiss = { showDialog = false },
+                onConfirm = { vinylResult ->
+                    if (selectedVinyl == null) {
+                        // Si era null, es CREAR
+                        viewModel.agregarProducto(vinylResult)
+                    } else {
+                        // Si tenia datos, es EDITAR
+                        viewModel.editarProducto(vinylResult.id, vinylResult)
+                    }
+                    showDialog = false
+                }
+            )
+        }
     }
 }
+
+// --- COMPONENTES ---
 
 @Composable
 fun OfferCard(vinyl: Vinyl, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.width(260.dp).height(140.dp).clickable { onClick() },
+        modifier = Modifier
+            .width(260.dp)
+            .height(140.dp)
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = SurfaceGrey),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            // USAMOS ASYNC IMAGE PARA URLS
             AsyncImage(
-                model = vinyl.imagenUrl, // URL de internet
+                model = vinyl.imagenUrl,
                 contentDescription = null,
-                modifier = Modifier.width(140.dp).fillMaxHeight(),
+                modifier = Modifier
+                    .width(140.dp)
+                    .fillMaxHeight(),
                 contentScale = ContentScale.Crop,
-                placeholder = painterResource(R.drawable.vinyl_record), // Mientras carga
-                error = painterResource(R.drawable.vinyl_record) // Si falla
+                placeholder = painterResource(R.drawable.vinyl_record),
+                error = painterResource(R.drawable.vinyl_record)
             )
-            Column(modifier = Modifier.padding(12.dp).fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center
+            ) {
                 Text("OFERTA", color = NeonGreen, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Text(vinyl.titulo, color = TextWhite, fontWeight = FontWeight.Bold, maxLines = 2)
                 Text("$${vinyl.precio}", color = Color.Gray)
@@ -147,18 +223,26 @@ fun OfferCard(vinyl: Vinyl, onClick: () -> Unit) {
 }
 
 @Composable
-fun ProductGridItem(vinyl: Vinyl, onClick: () -> Unit) {
+fun ProductGridItem(
+    vinyl: Vinyl,
+    onClick: () -> Unit,
+    onEdit: () -> Unit,   // Nuevo parametro
+    onDelete: () -> Unit  // Nuevo parametro
+) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = SurfaceGrey),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
-            // USAMOS ASYNC IMAGE PARA URLS
             AsyncImage(
                 model = vinyl.imagenUrl,
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth().height(160.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(R.drawable.vinyl_record),
                 error = painterResource(R.drawable.vinyl_record)
@@ -167,6 +251,21 @@ fun ProductGridItem(vinyl: Vinyl, onClick: () -> Unit) {
                 Text(vinyl.titulo, color = TextWhite, fontWeight = FontWeight.Bold, maxLines = 1)
                 Text(vinyl.artista, color = Color.Gray, fontSize = 12.sp, maxLines = 1)
                 Text("$${vinyl.precio}", color = NeonGreen, fontWeight = FontWeight.Bold)
+
+                // NUEVO: FILA DE BOTONES EDITAR Y BORRAR
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    // Botón Editar
+                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Color.LightGray)
+                    }
+                    // Botón Borrar
+                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = Color(0xFFFF5252))
+                    }
+                }
             }
         }
     }

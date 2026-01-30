@@ -9,7 +9,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.vinyl_vibe.online_v3"
+        applicationId = "com.example.vinyl_vibe.online_v4"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

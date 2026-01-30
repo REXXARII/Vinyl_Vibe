@@ -6,8 +6,6 @@ data class Vinyl(
     val id: Int,
 
     // --- CORRECCIÓN AQUÍ ---
-    // Le decimos a Android: "Aunque yo lo llame 'titulo',
-    // envíalo a internet con la etiqueta 'nombre'"
     @SerializedName("nombre") 
     val titulo: String,
 

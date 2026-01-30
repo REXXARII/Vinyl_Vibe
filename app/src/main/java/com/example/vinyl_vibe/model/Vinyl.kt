@@ -5,8 +5,10 @@ import com.google.gson.annotations.SerializedName
 data class Vinyl(
     val id: Int,
 
-    // Aceptamos "titulo" o "nombre" por si el backend cambia
-    @SerializedName("titulo", alternate = ["nombre", "name"])
+    // --- CORRECCIÓN AQUÍ ---
+    // Le decimos a Android: "Aunque yo lo llame 'titulo',
+    // envíalo a internet con la etiqueta 'nombre'"
+    @SerializedName("nombre") 
     val titulo: String,
 
     val artista: String,
@@ -14,10 +16,8 @@ data class Vinyl(
     val genero: String,
     val descripcion: String,
 
-    // AHORA LA IMAGEN ES UNA URL (Texto), NO UN ID
-    @SerializedName("imagen", alternate = ["image", "img", "url"])
+    @SerializedName("imagen")
     val imagenUrl: String? = null,
 
     val esOferta: Boolean = false
 )
-

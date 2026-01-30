@@ -49,7 +49,7 @@ fun HomeScreen(navController: NavController, viewModel: ShopViewModel = viewMode
             CenterAlignedTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painter = painterResource(id = R.drawable.vinyl_record), contentDescription = null, modifier = Modifier.size(32.dp))
+                        Icon(painter = painterResource(id = R.drawable.vinyl_record), contentDescription = null, modifier = Modifier.size(32.dp), tint = Color.Unspecified)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Vinyl Vibe Online", color = NeonGreen, fontWeight = FontWeight.Bold)
                     }
@@ -156,7 +156,7 @@ fun ProductGridItem(vinyl: Vinyl, onClick: () -> Unit) {
         Column {
             // USAMOS ASYNC IMAGE PARA URLS
             AsyncImage(
-                model = "https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg",
+                model = vinyl.imagenUrl,
                 contentDescription = null,
                 modifier = Modifier.fillMaxWidth().height(160.dp),
                 contentScale = ContentScale.Crop,

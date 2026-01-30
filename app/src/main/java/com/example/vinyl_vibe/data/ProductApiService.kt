@@ -18,13 +18,13 @@ interface ProductApiService {
 
     // crear, eliminar, editar
 
-    @POST("productos")
+        @POST("api/productos")
     suspend fun crearProducto(@Body vinyl: Vinyl): Vinyl
 
-    @DELETE("productos/{id}")
+    @DELETE("api/productos/{id}")
     suspend fun eliminarProducto(@Path("id") id: Int)
 
-    @PUT("productos/{id}")
+    @PUT("api/productos/{id}")
     suspend fun editarProducto(@Path("id") id: Int, @Body vinyl: Vinyl): Vinyl
 
 }

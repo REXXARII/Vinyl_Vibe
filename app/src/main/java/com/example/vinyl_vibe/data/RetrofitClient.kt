@@ -6,8 +6,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitClient {
 
     // 1. LAS DIRECCIONES (IP del Duoc)
-    private const val URL_USUARIOS = "http://10.67.88.95:8081/"
-    private const val URL_PRODUCTOS = "http://10.67.88.95:8080/"
+    private const val URL_USUARIOS = "http://10.155.137.248:8081/"
+    private const val URL_PRODUCTOS = "http://10.155.137.248:8080/"
 
     // --- CONEXION B: USUARIOS (Puerto 8081) ---
     private val retrofitUsuarios: Retrofit by lazy {

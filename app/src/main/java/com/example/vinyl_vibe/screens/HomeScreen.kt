@@ -41,14 +41,15 @@ fun HomeScreen(navController: NavController, viewModel: ShopViewModel = viewMode
 
     // AQUI ESTA EL CAMBIO: Leemos la lista del ViewModel (Internet), no del DataSource
     val allVinyls = viewModel.productos
-    val ofertas = allVinyls.filter { it.esOferta }
+    //cambiamos it.ofertas x el actual
+    val ofertas = allVinyls.filter { it.precio < 35000 }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painter = painterResource(id = R.drawable.vinyl_record), contentDescription = null, modifier = Modifier.size(32.dp), tint = NeonGreen)
+                        Icon(painter = painterResource(id = R.drawable.vinyl_record), contentDescription = null, modifier = Modifier.size(32.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Vinyl Vibe Online", color = NeonGreen, fontWeight = FontWeight.Bold)
                     }
@@ -155,7 +156,7 @@ fun ProductGridItem(vinyl: Vinyl, onClick: () -> Unit) {
         Column {
             // USAMOS ASYNC IMAGE PARA URLS
             AsyncImage(
-                model = vinyl.imagenUrl,
+                model = "https://upload.wikimedia.org/wikipedia/en/4/42/Beatles_-_Abbey_Road.jpg",
                 contentDescription = null,
                 modifier = Modifier.fillMaxWidth().height(160.dp),
                 contentScale = ContentScale.Crop,

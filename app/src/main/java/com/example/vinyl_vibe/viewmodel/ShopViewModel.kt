@@ -95,16 +95,14 @@ class ShopViewModel : ViewModel() {
     }
 
 
-// Buscar por ID
-
+// Buscar por ID (Corregido)
     fun buscarProductoPorId(id: Int, onResult: (Vinyl?) -> Unit) {
         viewModelScope.launch {
             try {
-                // Usamos la nueva función de la API
+                // CORRECCIÓN: Usamos RetrofitClient.productService
                 val resultado = RetrofitClient.productService.obtenerProductoPorId(id)
                 onResult(resultado)
             } catch (e: Exception) {
-                // Si falla (ej. 404), devolvemos null
                 Log.e("API_SHOP", "Error al buscar ID: $id", e)
                 onResult(null)
             }

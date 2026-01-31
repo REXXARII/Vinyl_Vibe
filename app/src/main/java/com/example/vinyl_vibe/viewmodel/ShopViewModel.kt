@@ -101,7 +101,7 @@ class ShopViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Usamos la nueva función de la API
-                val resultado = apiService.obtenerProductoPorId(id)
+                val resultado = RetrofitClient.productService.obtenerProductoPorId(id)
                 onResult(resultado)
             } catch (e: Exception) {
                 // Si falla (ej. 404), devolvemos null

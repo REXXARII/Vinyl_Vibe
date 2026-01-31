@@ -95,5 +95,20 @@ class ShopViewModel : ViewModel() {
     }
 
 
+// ... dentro de ShopViewModel ...
+
+    fun buscarProductoPorId(id: Int, onResult: (Vinyl?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                // Usamos la nueva función de la API
+                val resultado = apiService.obtenerProductoPorId(id)
+                onResult(resultado)
+            } catch (e: Exception) {
+                // Si falla (ej. 404), devolvemos null
+                Log.e("API_SHOP", "Error al buscar ID: $id", e)
+                onResult(null)
+            }
+        }
+    }
 }
 

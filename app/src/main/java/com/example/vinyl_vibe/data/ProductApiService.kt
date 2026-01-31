@@ -16,6 +16,9 @@ interface ProductApiService {
     @GET("api/productos")
     suspend fun getProductos(): Response<List<Vinyl>>
 
+    @GET("api/productos/{id}")
+    suspend fun obtenerProductoPorId(@Path("id") id: Int): Vinyl
+
     // crear, eliminar, editar
 
     @POST("api/productos")

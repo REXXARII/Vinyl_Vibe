@@ -95,7 +95,7 @@ class ShopViewModel : ViewModel() {
     }
 
 
-// ... dentro de ShopViewModel ...
+// Buscar por ID
 
     fun buscarProductoPorId(id: Int, onResult: (Vinyl?) -> Unit) {
         viewModelScope.launch {

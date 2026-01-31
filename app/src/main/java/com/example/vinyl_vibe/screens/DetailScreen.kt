@@ -34,8 +34,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 
-//recibe vinylId por navegacion
-// use launchedEffect con animatable para animacion del disco deslizandose ( offset)
+// cambios hacia abajo...
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
@@ -43,29 +43,48 @@ fun DetailScreen(
     vinylId: Int?,
     viewModel: ShopViewModel = viewModel()
 ) {
-    //cambiamos de local a internet
-    // Buscamos en la lista que bajamos de internet (viewModel)
-    val vinyl = viewModel.productos.find { it.id == vinylId }
-
+    // 1. ESTADO: Guardamos el disco aqui (puede empezar vacio)
+    var vinyl by remember { mutableStateOf<Vinyl?>(null) }
+    
+    // 2. LOGICA DE BUSQUEDA (Memoria + Internet)
+    LaunchedEffect(vinylId) {
+        if (vinylId != null) {
+            // Intento A: Buscar en la lista que ya tenemos (Rapido)
+            val enMemoria = viewModel.productos.find { it.id == vinylId }
+            
+            if (enMemoria != null) {
+                vinyl = enMemoria
+            } else {
+                // Intento B: Si no esta, pedirlo a Internet (Lento pero seguro)
+                viewModel.buscarProductoPorId(vinylId) { encontrado ->
+                    vinyl = encontrado
+                }
+            }
+        }
+    }
 
     // Estado para la animacion
     val discOffset = remember { Animatable(0f) }
 
-    // Efecto al abrir la pantalla
-    LaunchedEffect(Unit) {
-        discOffset.animateTo(
-            targetValue = 130f,
-            animationSpec = tween(durationMillis = 1000)
-        )
+    LaunchedEffect(vinyl) { // Se anima cuando 'vinyl' ya tiene datos
+        if (vinyl != null) {
+            discOffset.animateTo(
+                targetValue = 130f,
+                animationSpec = tween(durationMillis = 1000)
+            )
+        }
     }
 
-    // No disco = error
+    // 3. PANTALLA DE CARGA O ERROR
     if (vinyl == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Producto no encontrado", color = TextWhite)
+            // Mientras busca, mostramos un cargando en vez de error
+            CircularProgressIndicator(color = NeonGreen)
         }
         return
     }
+
+    // sin cambios hacia abajo...
 
     Scaffold(
         topBar = {
